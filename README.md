@@ -1,5 +1,5 @@
 # NADB
 Not Another Discord Bot
 
-# A bot that has lots of functionability
+# Just another discord bot
 A test project at making a discord bot to fit personal needs
