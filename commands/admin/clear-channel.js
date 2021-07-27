@@ -7,8 +7,8 @@ module.exports = {
         if (args) {
             message.channel.messages.fetch().then((results) => {
                 message.channel.bulkDelete(results)
-                return
             })
+            return
         }
         const targetChannel = message.mentions.channels.first()
         if (!targetChannel) {
