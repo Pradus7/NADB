@@ -4,7 +4,7 @@ module.exports = {
     minArgs: 0,
     maxArgs: 1,
     callback: (message, args, text) => {
-        if (!args) {
+        if (args) {
             message.channel.messages.fetch().then((results) => {
                 message.channel.bulkDelete(results)
                 return
