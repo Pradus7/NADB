@@ -101,6 +101,8 @@ module.exports = (client, commandOptions) => {
                     return
                 }
 
+                console.log(`Running command "${alias}"`)
+
                 callback(message, args, args.join(' '))
 
                 return
