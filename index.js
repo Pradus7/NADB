@@ -7,7 +7,7 @@ require('dotenv').config()
 const config = require('./config.json')
 
 client.on('ready', async () => {
-    console.log('The client is ready!')
+    console.log(`Bot ${client.user.tag} is now online!`)
 
     const basefile = 'command-base.js'
     const commandBase = require(`./commands/${basefile}`)
