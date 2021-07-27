@@ -1,5 +1,3 @@
-
-
 module.exports = {
     commands: ['ping'],
     minArgs: 0,
