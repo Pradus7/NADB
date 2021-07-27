@@ -35,7 +35,7 @@ const validatePermissions = (permissions) => {
         'MANAGE_EMOJIS',
     ]
 
-    for (const permission of Permissions) {
+    for (const permission of permissions) {
         if (!validPermissions.includes(permisison)) {
             throw new Error(`Unknown permission! ${permission}`)
         }
