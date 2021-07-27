@@ -1,139 +1,32 @@
+const path = require('path')
+const fs = require('fs')
 const Discord = require('discord.js')
+const client = new Discord.Client()
 require('dotenv').config()
 
-const client = new Discord.Client()
+const config = require('./config.json')
 
-const command = require('./command')
-const firstMessage = require('./first-message')
-const privateMessage = require('./private-message')
+client.on('ready', async () => {
+    console.log('The client is ready!')
 
-client.on('ready', () => {
-    console.log(`Bot ${client.user.tag} is now ready!`)
+    const basefile = 'command-base.js'
+    const commandBase = require(`./commands/${basefile}`)
 
-    command(client, ['ping', 'test'], (message) => {
-        message.channel.send('Pong!')
-    })
-
-    command(client, 'servers', (message) => {
-        client.guilds.cache.forEach((guild) => {
-            message.channel.send(
-                `${guild.name} has a total of ${guild.memberCount} members`
-            )
-        })
-    })
-
-    command(client, ['cc', 'clearchannel'], (message) => {
-        if (message.member.hasPermission('ADMINISTRATOR')) {
-            message.channel.messages.fetch().then((results) => {
-                message.channel.bulkDelete(results)
-            })
-        }
-    })
-
-    command(client, 'status', (message) => {
-        const content = message.content.replace('!status', '')
-
-        client.user.setPresence({
-            activity: { 
-                name: content,
-                type: 2
+    const readCommands = dir => {
+        const files = fs.readdirSync(path.join(__dirname, dir))
+        for (const file of files) {
+            const stat = fs.lstatSync(path.join(__dirname, dir, file))
+            if(stat.isDirectory()) {
+                readCommands(path.join(dir, file))
+            } else if (file !== basefile) {
+                const option = require(path.join(__dirname, dir, file))
+                commandBase(client, option)
             }
-        })
-    })
+        }
+    }
 
-    command(client, 'serverinfo', (message) => {
-        const { guild } = message
-        const { name, region, memberCount, owner, iconURL } = guild
-
-        const embed = new Discord.MessageEmbed()
-            .setTitle(`Server info for ${name}`)
-            .setThumbnail(iconURL)
-            .addFields(
-                {
-                    name: 'Region',
-                    value: region,
-                }, {
-                    name: 'Members',
-                    value: memberCount,
-                }, {
-                    name: 'Owner',
-                    value: owner.user.tag,
-                }
-            )
-        
-        message.channel.send(embed)
-    })
-
-    // firstMessage(client, '868110974337577031', ':(', ['🔥', '💧'])
-
-    privateMessage(client, 'ping', 'pong')
+    readCommands('commands')
 
 })
 
-
 client.login(process.env.TOKEN)
-
-
-// channel creation
-async function demoChannelCreation(message) {
-    const name = 'new channel name'
-
-    message.guild.channels.create(
-        name,
-        {
-            type: 'text'    // 'voice' for a new voice channel
-        }
-    ).then((channel) => {
-        console.log(channel)
-        const categoryId = 'some category id from discord'
-        channel.setParent(categoryId)
-        // channel.setUserLimit(10)
-    })
-}
-
-async function demoEmbed(message) {
-    const img = 'image url'
-
-    const embed = new Discord.MessageEmbed()
-        .setTitle('Embed Title')
-        .setURL('https://google.com')
-        .setAuthor(message.author.username)
-        // .setImage(img)
-        // .setThumbnail(img)
-        // .setFooter('this is a footer', img)  // img is optional in a footer
-        // .setColor('#FFFFFF')
-        .addFields(
-            {
-                name: 'Field name1',
-                value: 'THIS IS A FIELD :)',
-                inline: true
-            },
-            {
-                name: 'Field name2',
-                value: 'THIS IS A FIELD :)',
-                inline: true
-            },
-            {
-                name: 'Field name3',
-                value: 'THIS IS A FIELD :)',
-                inline: true
-            },
-            {
-                name: 'Field name4',
-                value: 'THIS IS A FIELD :)',
-                inline: false
-            },
-            {
-                name: 'Field name5',
-                value: 'THIS IS A FIELD :)',
-                inline: true
-            },
-            {
-                name: 'Field name6',
-                value: 'THIS IS A FIELD :)',
-                inline: true
-            }
-        )
-    
-    message.channel.send(embed)
-}
