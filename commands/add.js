@@ -11,12 +11,12 @@ module.exports = {
         const num2 = Number(args[1])
 
         if(isNaN(num1)) {
-            message.reply(`${arg[0]} is not a valid number!`)
+            message.reply(`${args[0]} is not a valid number!`)
             return
         }
 
         if(isNaN(num2)) {
-            message.reply(`${arg[1]} is not a valid number!`)
+            message.reply(`${args[1]} is not a valid number!`)
             return
         }
 
