@@ -42,16 +42,12 @@ const validatePermissions = (permissions) => {
     }
 }
 
-module.exports = (client, commandOptions) => {
+const allCommands = {}
+
+module.exports = (commandOptions) => {
     let {
         commands,
-        expectedArgs = '',
-        permissionError = 'Insufficient Perms',
-        minArgs = 0,
-        maxArgs = null,
         permissions = [],
-        requiredRoles = [],
-        callback
     } = commandOptions
 
     if (typeof commands === 'string') commands = [commands]
@@ -66,48 +62,63 @@ module.exports = (client, commandOptions) => {
         validatePermissions(permissions)
     }
 
+    for (const command of commands) {
+        allCommands[command] = {
+            ...commandOptions,
+            commands,
+            permissions
+        }
+    }
+}
+
+module.exports.listen = (client) => {
     client.on('message', message => {
         const { member, content, guild } = message
 
-        for (const alias of commands) {
-            if (content.toLowerCase().startsWith(`${prefix}${alias.toLowerCase()}`)) {
-                for (const permission of permissions) {
-                    if (!member.hasPermission(permission)) {
-                        message.reply(permissionError)
-                        return
-                    }
-                }
+        const args = content.split(/\s+/)
 
-                for (const requiredRole of requiredRoles) {
-                    const role = guild.roles.cache.find(role => role.name === requiredRole)
+        //remove first index since that is a command call
+        const name = args.shift().toLowerCase()
 
+        if (name.startsWith(prefix)) {
+            const command = allCommands[name.replace(prefix, '')]
+            if (!command) return
+        }
 
-                    if (!role || member.roles.cache.has(role.id)) {
-                        message.reply(`${requiredRole} role is required!`)
-                        return
-                    }
-                }
+        const {
+            permissions,
+            permissionError = "Insufficient permissions",
+            requiredRoles = [],
+            minArgs = 0,
+            maxArgs = null,
+            expectedArgs = '',
+            callback,
+        } = command
 
-                const args = content.split(/\s+/)
-
-                //remove first index since that is a command call
-
-                args.shift()
-
-                if (args.length < minArgs || (
-                    !maxArgs && args.length > maxArgs
-                )) {
-                    message.reply(`Incorrect syntax!\n\n${prefix}${alias} ${expectedArgs}`)
-                    return
-                }
-
-                console.log(`Running command "${alias}"`)
-
-                callback(message, args, args.join(' '))
-
+        for (const permission of permissions) {
+            if (!member.hasPermission(permission)) {
+                message.reply(permissionError)
                 return
             }
         }
-    })
 
+        for (const requiredRole of requiredRoles) {
+            const role = guild.roles.cache.find(role => role.name === requiredRole)
+
+
+            if (!role || member.roles.cache.has(role.id)) {
+                message.reply(`${requiredRole} role is required!`)
+                return
+            }
+        }
+
+        if (args.length < minArgs || (!maxArgs && args.length > maxArgs)) {
+            message.reply(`Incorrect syntax!\n\n${prefix}${alias} ${expectedArgs}`)
+            return
+        }
+
+        console.log(`Running command "${alias}"`)
+
+        callback(message, args, args.join(' '))
+    })
 }

@@ -20,12 +20,14 @@ client.on('ready', async () => {
                 readCommands(path.join(dir, file))
             } else if (file !== basefile) {
                 const option = require(path.join(__dirname, dir, file))
-                commandBase(client, option)
+                commandBase(option)
             }
         }
     }
 
     readCommands('commands')
+
+    commandBase.listen(client)
 
 })
 
