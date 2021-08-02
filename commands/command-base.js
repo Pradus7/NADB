@@ -81,44 +81,45 @@ module.exports.listen = (client) => {
         const name = args.shift().toLowerCase()
 
         if (name.startsWith(prefix)) {
-            const command = allCommands[name.replace(prefix, '')]
+            const alias = name.replace(prefix, '')
+            const command = allCommands[alias]
             if (!command) return
-        }
 
-        const {
-            permissions,
-            permissionError = "Insufficient permissions",
-            requiredRoles = [],
-            minArgs = 0,
-            maxArgs = null,
-            expectedArgs = '',
-            callback,
-        } = command
+            const {
+                permissions,
+                permissionError = "Insufficient permissions",
+                requiredRoles = [],
+                minArgs = 0,
+                maxArgs = null,
+                expectedArgs = '',
+                callback,
+            } = command
 
-        for (const permission of permissions) {
-            if (!member.hasPermission(permission)) {
-                message.reply(permissionError)
+            for (const permission of permissions) {
+                if (!member.hasPermission(permission)) {
+                    message.reply(permissionError)
+                    return
+                }
+            }
+
+            for (const requiredRole of requiredRoles) {
+                const role = guild.roles.cache.find(role => role.name === requiredRole)
+
+
+                if (!role || member.roles.cache.has(role.id)) {
+                    message.reply(`${requiredRole} role is required!`)
+                    return
+                }
+            }
+
+            if (args.length < minArgs || (!maxArgs && args.length > maxArgs)) {
+                message.reply(`Incorrect syntax!\n\n${prefix}${alias} ${expectedArgs}`)
                 return
             }
+
+            console.log(`Running command "${alias}"`)
+
+            callback(message, args, args.join(' '))
         }
-
-        for (const requiredRole of requiredRoles) {
-            const role = guild.roles.cache.find(role => role.name === requiredRole)
-
-
-            if (!role || member.roles.cache.has(role.id)) {
-                message.reply(`${requiredRole} role is required!`)
-                return
-            }
-        }
-
-        if (args.length < minArgs || (!maxArgs && args.length > maxArgs)) {
-            message.reply(`Incorrect syntax!\n\n${prefix}${alias} ${expectedArgs}`)
-            return
-        }
-
-        console.log(`Running command "${alias}"`)
-
-        callback(message, args, args.join(' '))
     })
 }
